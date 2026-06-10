@@ -66,6 +66,7 @@ function setGreeting() {
 const prompts = [
     "What's one thing you'll finish today?",
     "What's blocking you?",
+    "What are you knocking off the list today?",
     "Share a small win from yesterday.",
     "What are you learning right now?",
     "How can the team help you?"
