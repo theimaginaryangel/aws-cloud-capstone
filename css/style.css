@@ -1,0 +1,436 @@
+/* ============================================
+   TEAM CHECK-IN APP — GLASS + DARK MODE + REACTIONS
+   ============================================ */
+
+:root {
+    /* Light mode (default) */
+    --bg: #f0f2f5;
+    --surface: rgba(255, 255, 255, 0.7);
+    --surface-solid: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --border: rgba(0, 0, 0, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.75);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --indigo: #6366f1;
+    --indigo-dark: #4f46e5;
+    --success: #10b981;
+    --error: #ef4444;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --font: 'DM Sans', sans-serif;
+}
+
+body.dark-mode {
+    --bg: #0f172a;
+    --surface: rgba(30, 41, 59, 0.7);
+    --surface-solid: #1e293b;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(30, 41, 59, 0.8);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-main);
+    transition: background 0.3s, color 0.2s;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Glass card effect */
+.glass-card,
+.checkin-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+/* Header */
+.site-header {
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    backdrop-filter: blur(4px);
+}
+
+.dynamic-greeting {
+    font-size: 0.8rem;
+    color: var(--indigo);
+    font-weight: 500;
+}
+
+/* Main layout */
+.main-layout {
+    max-width: 100%;
+    margin: 32px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 32px;
+}
+
+/* Form panel */
+.form-card {
+    padding: 28px;
+}
+
+.daily-prompt {
+    background: rgba(99, 102, 241, 0.1);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--indigo);
+}
+
+.field-group {
+    margin-bottom: 18px;
+}
+
+.field-label {
+    font-weight: 500;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.field-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-main);
+    font-family: var(--font);
+    transition: 0.2s;
+}
+
+.field-input:focus {
+    outline: none;
+    border-color: var(--indigo);
+}
+
+.mood-picker {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mood-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 40px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+.mood-btn.selected {
+    border-color: var(--indigo);
+    background: rgba(99, 102, 241, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 0 0 2px var(--indigo);
+}
+
+.submit-btn {
+    background: var(--indigo);
+    color: white;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: var(--indigo-dark);
+    transform: scale(0.98);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.clear-btn {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 8px;
+    border-radius: 30px;
+    margin-top: 10px;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+/* Cards grid */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.checkin-card {
+    padding: 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: slideUp 0.3s ease;
+}
+
+.checkin-card:hover {
+    transform: translateY(-4px);
+}
+
+.card-mood {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+.card-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.card-status,
+.card-task {
+    font-size: 0.8rem;
+    margin: 8px 0;
+    opacity: 0.8;
+}
+
+/* Reactions row */
+.reactions-row {
+    display: flex;
+    gap: 12px;
+    margin: 12px 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.reaction-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    transition: 0.1s;
+}
+
+.reaction-btn:hover {
+    transform: scale(1.1);
+}
+
+.reaction-count {
+    font-size: 0.7rem;
+    background: var(--surface-solid);
+    padding: 2px 6px;
+    border-radius: 20px;
+}
+
+/* Comments section */
+.comment-section {
+    margin-top: 12px;
+}
+
+.comment-list {
+    max-height: 120px;
+    overflow-y: auto;
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+}
+
+.comment-item {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.comment-input-group {
+    display: flex;
+    gap: 6px;
+}
+
+.comment-input {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface-solid);
+    font-size: 0.7rem;
+}
+
+.comment-add {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* Card footer with delete button */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.card-time {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.card-delete {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.card-delete:hover {
+    color: var(--error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-muted);
+}
+
+.empty-state.hidden {
+    display: none;
+}
+
+/* Footer */
+.site-footer {
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+    padding: 16px;
+    text-align: center;
+    font-size: 0.7rem;
+    margin-top: auto;
+}
+
+.footer-inner {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-toast {
+    display: none;
+    margin-top: 12px;
+    background: var(--success);
+    color: white;
+    padding: 8px;
+    border-radius: 30px;
+    text-align: center;
+}
+
+.success-toast.visible {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .header-right .dynamic-greeting {
+        display: none;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+}
