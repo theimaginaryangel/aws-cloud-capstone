@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Check-in | Azubi Africa Cohort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./css/style.css" />
+</head>
+
+<body class="light-mode">
+
+    <!-- HEADER with theme toggle -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <span class="header-logo">CloudTeam 12</span>
+                <span class="header-tagline">Azubi Africa · AWS Capstone</span>
+            </div>
+            <div class="header-right">
+                <span class="dynamic-greeting" id="dynamic-greeting"></span>
+                <span class="header-date" id="header-date"></span>
+                <span class="checkin-count-badge" id="checkin-count-badge">0 / 12 checked in</span>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Switch dark/light mode">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <main class="main-layout">
+
+        <!-- FORM PANEL -->
+        <aside class="form-panel">
+            <div class="form-card glass-card">
+                <h2 class="form-title">How are you today?</h2>
+                <p class="form-sub">Takes 30 seconds. Let the team know you're in.</p>
+
+                <!-- Daily prompt -->
+                <div class="daily-prompt" id="daily-prompt">
+                    Today's goal: <span id="prompt-text">What will you finish today?</span>
+                </div>
+
+                <!-- Name -->
+                <div class="field-group">
+                    <label class="field-label" for="input-name">Your name</label>
+                    <input class="field-input" id="input-name" type="text" placeholder="e.g. Ama, Kweku, Benny..."
+                        maxlength="40" autocomplete="off" />
+                </div>
+
+                <!-- Mood -->
+                <div class="field-group">
+                    <label class="field-label">Your mood</label>
+                    <div class="mood-picker" id="mood-picker" role="group" aria-label="Pick your mood">
+                        <button class="mood-btn" data-mood="🔥" data-label="On fire" type="button">🔥</button>
+                        <button class="mood-btn" data-mood="😊" data-label="Good" type="button">😊</button>
+                        <button class="mood-btn" data-mood="😐" data-label="Okay" type="button">😐</button>
+                        <button class="mood-btn" data-mood="😴" data-label="Tired" type="button">😴</button>
+                        <button class="mood-btn" data-mood="🤔" data-label="Thinking" type="button">🤔</button>
+                        <button class="mood-btn" data-mood="💪" data-label="Focused" type="button">💪</button>
+                    </div>
+                </div>
+
+                <!-- Status (one-line) -->
+                <div class="field-group">
+                    <label class="field-label" for="input-status">One-line status</label>
+                    <input class="field-input" id="input-status" type="text" placeholder="e.g. Just finished Phase 2..."
+                        maxlength="80" autocomplete="off" />
+                </div>
+
+                <!-- Working on -->
+                <div class="field-group">
+                    <label class="field-label" for="input-task">Working on today</label>
+                    <textarea class="field-input field-textarea" id="input-task"
+                        placeholder="e.g. Setting up CloudFront..." maxlength="160" rows="3"></textarea>
+                    <span class="char-count" id="char-count">0 / 160</span>
+                </div>
+
+                <!-- Error message -->
+                <p class="form-error" id="form-error" aria-live="polite"></p>
+
+                <!-- Submit -->
+                <button class="submit-btn" id="submit-btn" type="button">Check in</button>
+
+                <!-- Success toast -->
+                <div class="success-toast" id="success-toast" aria-live="polite">✓ You're checked in!</div>
+            </div>
+
+            <!-- Reset button -->
+            <button class="clear-btn" id="clear-btn" type="button">Reset today's check-ins</button>
+        </aside>
+
+        <!-- CARDS WALL -->
+        <section class="cards-section">
+            <div class="cards-header">
+                <h2 class="cards-title">Today's check-ins</h2>
+                <span class="cards-subtitle" id="cards-subtitle">No one has checked in yet — be the first.</span>
+            </div>
+            <div class="cards-grid" id="cards-grid"></div>
+            <div class="empty-state" id="empty-state">
+                <span class="empty-icon">👋</span>
+                <p>The board is empty.</p>
+                <p>Fill in the form and check in to get things started.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <span>Live Checkin Webapp Hosted on AWS · CloudFront + ALB + EC2</span>
+            <span class="footer-aws">Copyright 2026 Cloudteam 12</span>
+        </div>
+    </footer>
+
+    <script src="./js/main.js"></script>
+</body>
+
+</html>
