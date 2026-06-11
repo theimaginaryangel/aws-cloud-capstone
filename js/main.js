@@ -1,11 +1,10 @@
 /* ============================================
-   TEAM CHECK-IN APP — FINAL INTEGRATED VERSION
-   Limit: max 5 unique members/day, delete button, reactions, comments, dark mode
+   TEAM CHECK-IN APP — SYNC VERSION (Node.js backend)
+   All users share the same check-ins via EC2 file storage.
    ============================================ */
 
-const STORAGE_KEY = 'team_checkins_v3';
 const MAX_TEAM = 12;
-let checkins = loadCheckins();
+let checkins = [];
 let selectedMood = null;
 
 // DOM elements
@@ -26,33 +25,20 @@ const headerDate = document.getElementById('header-date');
 const themeToggle = document.getElementById('theme-toggle');
 const dynamicGreeting = document.getElementById('dynamic-greeting');
 
-// Helper: today's date as YYYY-MM-DD
-function getTodayDate() {
-    return new Date().toISOString().split('T')[0];
-}
+function getTodayDate() { return new Date().toISOString().split('T')[0]; }
+function getTodayCheckins() { return checkins.filter(c => c.date === getTodayDate()); }
+function getUniqueMemberCountToday() { return new Set(getTodayCheckins().map(c => c.name.toLowerCase())).size; }
 
-function getTodayCheckins() {
-    const today = getTodayDate();
-    return checkins.filter(c => c.date === today);
-}
-
-function getUniqueMemberCountToday() {
-    return new Set(getTodayCheckins().map(c => c.name.toLowerCase())).size;
-}
-
-// Update submit button state based on limit
 function updateSubmitButtonState() {
     const uniqueCount = getUniqueMemberCountToday();
-    const limitReached = uniqueCount >= MAX_TEAM;
-    submitBtn.disabled = limitReached;
-    if (limitReached && !formError.textContent.includes('limit reached')) {
+    submitBtn.disabled = uniqueCount >= MAX_TEAM;
+    if (submitBtn.disabled && !formError.textContent.includes('limit reached')) {
         formError.textContent = `✅ Team limit reached (${MAX_TEAM}/${MAX_TEAM}). No more check‑ins for today.`;
-    } else if (!limitReached && formError.textContent.includes('limit reached')) {
+    } else if (!submitBtn.disabled && formError.textContent.includes('limit reached')) {
         formError.textContent = '';
     }
 }
 
-// Dynamic greeting based on hour
 function setGreeting() {
     const hour = new Date().getHours();
     let greet = '';
@@ -62,28 +48,13 @@ function setGreeting() {
     dynamicGreeting.textContent = `${greet}, CloudTeam`;
 }
 
-// Daily rotating prompt
-const prompts = [
-    "What's one thing you'll finish today?",
-    "What's blocking you?",
-    "What are you knocking off the list today?",
-    "Share a small win from yesterday.",
-    "What are you learning right now?",
-    "How can the team help you?"
-];
-const promptElement = document.getElementById('prompt-text');
-if (promptElement) {
-    promptElement.textContent = prompts[Math.floor(Math.random() * prompts.length)];
-}
-
-// Set header date
 function setHeaderDate() {
     const now = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     headerDate.textContent = now.toLocaleDateString('en-GB', options);
 }
 
-// Theme toggle (dark/light mode)
+// Theme toggle
 function initTheme() {
     const saved = localStorage.getItem('theme');
     if (saved === 'dark') document.body.classList.add('dark-mode');
@@ -106,15 +77,70 @@ moodPicker.addEventListener('click', (e) => {
     clearError();
 });
 
-// Character count for task textarea
 inputTask.addEventListener('input', () => {
     charCount.textContent = `${inputTask.value.length} / 160`;
 });
 
-// Submit new check-in
+// API calls
+async function loadCheckins() {
+    try {
+        const res = await fetch('/api/checkins');
+        if (!res.ok) throw new Error('Failed to fetch');
+        checkins = await res.json();
+        renderAll();
+    } catch (err) {
+        console.error('Error loading check-ins:', err);
+        showError('Cannot connect to server. Please refresh.');
+    }
+}
+
+async function addCheckinToServer(entry) {
+    const res = await fetch('/api/checkins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+    });
+    if (res.ok) {
+        await loadCheckins();
+        return true;
+    } else {
+        const err = await res.json();
+        showError(err.error || 'Failed to add check-in');
+        return false;
+    }
+}
+
+async function deleteCheckinOnServer(id) {
+    await fetch(`/api/checkins/${id}`, { method: 'DELETE' });
+    await loadCheckins();
+}
+
+async function addReactionOnServer(cardId, reactionType) {
+    await fetch(`/api/reactions/${cardId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reactionType })
+    });
+    await loadCheckins();
+}
+
+async function addCommentOnServer(cardId, text, timestamp) {
+    await fetch(`/api/comments/${cardId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, timestamp })
+    });
+    await loadCheckins();
+}
+
+async function resetTodayOnServer() {
+    await fetch('/api/reset-today', { method: 'DELETE' });
+    await loadCheckins();
+}
+
+// Submit handler
 submitBtn.addEventListener('click', handleSubmit);
-function handleSubmit() {
-    // Hard limit check
+async function handleSubmit() {
     if (getUniqueMemberCountToday() >= MAX_TEAM) {
         showError(`Limit reached: only ${MAX_TEAM} team members can check in per day.`);
         updateSubmitButtonState();
@@ -130,117 +156,66 @@ function handleSubmit() {
     if (!status) return showError('Add a status.');
 
     const today = getTodayDate();
-    const todayCheckins = getTodayCheckins();
-    if (todayCheckins.some(c => c.name.toLowerCase() === name.toLowerCase()))
+    if (getTodayCheckins().some(c => c.name.toLowerCase() === name.toLowerCase()))
         return showError(`${name} already checked in today.`);
-
-    if (getUniqueMemberCountToday() >= MAX_TEAM)
-        return showError(`Cannot add more than ${MAX_TEAM} unique members today.`);
 
     const entry = {
         id: Date.now(),
         date: today,
-        name: name,
+        name,
         mood: selectedMood.emoji,
         moodLabel: selectedMood.label,
-        status: status,
+        status,
         task: task || '—',
         time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
         reactions: { '👍': 0, '🎉': 0, '☕': 0 },
         comments: []
     };
-    checkins.unshift(entry);
-    saveCheckins();
-    renderAll();
-    resetForm();
-    showSuccess();
+    const success = await addCheckinToServer(entry);
+    if (success) {
+        resetForm();
+        showSuccess();
+    }
 }
 
-// Delete check-in (only today's entries are deletable)
 function deleteCheckin(id) {
     const entry = checkins.find(c => c.id === id);
-    if (!entry) return;
-    if (entry.date !== getTodayDate()) {
-        showError('You can only delete today’s check‑ins.');
+    if (entry && entry.date !== getTodayDate()) {
+        showError('Can only delete today’s check‑ins.');
         return;
     }
-    checkins = checkins.filter(c => c.id !== id);
-    saveCheckins();
-    renderAll();
-    updateSubmitButtonState();
-    if (getUniqueMemberCountToday() < MAX_TEAM && formError.textContent.includes('limit')) {
-        clearError();
-    }
+    deleteCheckinOnServer(id);
 }
 
-// Add reaction to a card
-function addReaction(cardId, reactionType) {
-    const entry = checkins.find(c => c.id === cardId);
-    if (entry) {
-        entry.reactions[reactionType] = (entry.reactions[reactionType] || 0) + 1;
-        saveCheckins();
-        renderAll();
-    }
-}
-
-// Add comment to a card
+function addReaction(cardId, reactionType) { addReactionOnServer(cardId, reactionType); }
 function addComment(cardId, commentText) {
     if (!commentText.trim()) return;
-    const entry = checkins.find(c => c.id === cardId);
-    if (entry) {
-        entry.comments.push({
-            text: commentText.trim(),
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        saveCheckins();
-        renderAll();
-    }
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    addCommentOnServer(cardId, commentText.trim(), timestamp);
 }
 
-// Reset today's check-ins only
-clearBtn.addEventListener('click', () => {
-    const today = getTodayDate();
-    const hasToday = checkins.some(c => c.date === today);
-    if (!hasToday) return;
+clearBtn.addEventListener('click', async () => {
+    if (!checkins.some(c => c.date === getTodayDate())) return;
     if (confirm('Reset all check-ins for today?')) {
-        checkins = checkins.filter(c => c.date !== today);
-        saveCheckins();
-        renderAll();
-        updateSubmitButtonState();
-        clearError();
+        await resetTodayOnServer();
         showSuccess();
     }
 });
 
-// Render everything: cards, badge, subtitle
-function renderAll() {
-    renderCards();
-    updateCountBadge();
-    updateSubtitle();
-    updateSubmitButtonState();
-}
-
+// Render functions
 function renderCards() {
     const todayCheckins = getTodayCheckins();
     cardsGrid.innerHTML = '';
-    if (todayCheckins.length === 0) {
-        emptyState.classList.remove('hidden');
-        return;
-    }
+    if (todayCheckins.length === 0) { emptyState.classList.remove('hidden'); return; }
     emptyState.classList.add('hidden');
-
     todayCheckins.forEach(entry => {
         const card = document.createElement('div');
         card.className = 'checkin-card';
         card.setAttribute('data-id', entry.id);
-
-        // Build reactions HTML
         let reactionsHtml = '';
         for (const [emoji, count] of Object.entries(entry.reactions)) {
             reactionsHtml += `<button class="reaction-btn" data-reaction="${emoji}">${emoji}<span class="reaction-count">${count}</span></button>`;
         }
-
-        // Build comments HTML
         let commentsHtml = '<div class="comment-section"><div class="comment-list">';
         entry.comments.forEach(com => {
             commentsHtml += `<div class="comment-item"><strong>${escapeHtml(com.timestamp)}</strong> ${escapeHtml(com.text)}</div>`;
@@ -249,7 +224,6 @@ function renderCards() {
       <input type="text" class="comment-input" placeholder="Add a comment..." maxlength="100">
       <button class="comment-add">💬</button>
     </div></div>`;
-
         card.innerHTML = `
       <span class="card-mood">${entry.mood}</span>
       <div class="card-name">${escapeHtml(entry.name)}</div>
@@ -263,14 +237,9 @@ function renderCards() {
         <button class="card-delete" title="Remove check-in">✕</button>
       </div>
     `;
-
-        // Attach reaction listeners
         card.querySelectorAll('.reaction-btn').forEach(btn => {
-            const reaction = btn.getAttribute('data-reaction');
-            btn.addEventListener('click', () => addReaction(entry.id, reaction));
+            btn.addEventListener('click', () => addReaction(entry.id, btn.getAttribute('data-reaction')));
         });
-
-        // Attach comment listener
         const commentInput = card.querySelector('.comment-input');
         const commentAdd = card.querySelector('.comment-add');
         commentAdd.addEventListener('click', () => {
@@ -283,26 +252,12 @@ function renderCards() {
                 commentInput.value = '';
             }
         });
-
-        // Attach delete listener
         card.querySelector('.card-delete').addEventListener('click', () => deleteCheckin(entry.id));
-
         cardsGrid.appendChild(card);
     });
 }
 
-function updateCountBadge() {
-    const unique = getUniqueMemberCountToday();
-    countBadge.textContent = `${unique} / ${MAX_TEAM} checked in`;
-    if (unique >= MAX_TEAM) {
-        countBadge.style.background = 'rgba(16,185,129,0.2)';
-        countBadge.style.color = '#6EE7B7';
-    } else {
-        countBadge.style.background = '';
-        countBadge.style.color = '';
-    }
-}
-
+function updateCountBadge() { countBadge.textContent = `${getUniqueMemberCountToday()} / ${MAX_TEAM} checked in`; }
 function updateSubtitle() {
     const u = getUniqueMemberCountToday();
     if (u === 0) cardsSubtitle.textContent = 'No one has checked in yet — be the first.';
@@ -310,8 +265,13 @@ function updateSubtitle() {
     else if (u >= MAX_TEAM) cardsSubtitle.textContent = 'Full team checked in! 🎉';
     else cardsSubtitle.textContent = `${u} team members have checked in today.`;
 }
+function renderAll() {
+    renderCards();
+    updateCountBadge();
+    updateSubtitle();
+    updateSubmitButtonState();
+}
 
-// Form helpers
 function resetForm() {
     inputName.value = '';
     inputStatus.value = '';
@@ -327,37 +287,10 @@ function showSuccess() {
     successToast.classList.add('visible');
     setTimeout(() => successToast.classList.remove('visible'), 3000);
 }
-function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function (m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
+function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)); }
 
-// Storage with auto‑cleanup (keep last 7 days)
-function saveCheckins() {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const weekAgoStr = weekAgo.toISOString().split('T')[0];
-    checkins = checkins.filter(c => c.date >= weekAgoStr);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(checkins));
-}
-function loadCheckins() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const loaded = raw ? JSON.parse(raw) : [];
-        return loaded.map(entry => {
-            if (!entry.reactions) entry.reactions = { '👍': 0, '🎉': 0, '☕': 0 };
-            if (!entry.comments) entry.comments = [];
-            return entry;
-        });
-    } catch (e) { return []; }
-}
-
-// Initialise
+// Initial load
 setHeaderDate();
 setGreeting();
 initTheme();
-renderAll();
+loadCheckins();
