@@ -1,0 +1,12 @@
+{
+    "name": "team-checkin-backend",
+    "version": "1.0.0",
+    "description": "Shared backend for team check-in app",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2"
+    }
+}
