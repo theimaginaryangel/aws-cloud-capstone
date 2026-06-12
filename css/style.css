@@ -1002,3 +1002,48 @@ body.dark-mode .field-input:focus {
         font-size: 0.85rem;
     }
 }
+
+/* ============================================
+   CENTER FORM & CARDS ON MOBILE
+   (adds horizontal centering for small screens)
+   ============================================ */
+
+/* For tablet portrait and below (max-width: 860px) */
+@media (max-width: 860px) {
+    .main-layout {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0 20px;
+    }
+
+    .form-panel,
+    .cards-section {
+        width: 100%;
+        max-width: 500px;
+        /* limits width on mobile, feels centered */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cards-grid {
+        justify-content: center;
+    }
+
+    .checkin-card {
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+    }
+}
+
+/* For very small phones (max-width: 600px) */
+@media (max-width: 600px) {
+
+    .form-panel,
+    .cards-section {
+        max-width: 95%;
+        /* more breathing room on very narrow screens */
+    }
+}
