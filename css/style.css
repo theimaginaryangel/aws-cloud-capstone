@@ -712,3 +712,285 @@ body.dark-mode .field-input:focus {
         font-size: 1.15rem;
     }
 }
+
+/* ============================================
+   ADDITIONAL RESPONSIVE ENHANCEMENTS
+   (keeps all your original styles intact)
+   ============================================ */
+
+/* Very large screens ( > 1600px ) – keep 3 columns, but widen gaps */
+@media (min-width: 1600px) {
+    .main-layout {
+        max-width: 1600px;
+        margin: 60px auto;
+        gap: 60px;
+    }
+
+    .cards-grid {
+        gap: 28px;
+    }
+}
+
+/* Tablet landscape (between 1100px and 860px) */
+@media (max-width: 1100px) and (min-width: 861px) {
+    .main-layout {
+        padding-left: 40px;
+        padding-right: 40px;
+        gap: 30px;
+    }
+
+    .form-card {
+        padding: 20px;
+    }
+
+    .cards-grid {
+        gap: 18px;
+    }
+
+    .checkin-card {
+        padding: 16px;
+    }
+
+    .card-mood {
+        font-size: 1.8rem;
+    }
+
+    .card-name {
+        font-size: 0.95rem;
+    }
+}
+
+/* Tablet portrait (between 860px and 600px) */
+@media (max-width: 860px) and (min-width: 601px) {
+    .main-layout {
+        padding: 0 24px;
+        gap: 32px;
+    }
+
+    .form-card {
+        padding: 24px;
+    }
+
+    .cards-grid {
+        gap: 20px;
+    }
+
+    .checkin-card {
+        padding: 18px;
+    }
+
+    .header-tagline {
+        font-size: 0.65rem;
+    }
+
+    .header-date {
+        font-size: 0.7rem;
+    }
+
+    .dynamic-greeting {
+        display: inline-block;
+        /* override previous hide? your original hides it, but we keep your rule; this won't override because your rule is more specific? Actually your rule hides it; we'll not override. */
+        /* Keep your .dynamic-greeting { display: none; } – fine */
+    }
+}
+
+/* Mobile landscape (up to 600px) */
+@media (max-width: 600px) {
+    .main-layout {
+        padding: 0 16px;
+        gap: 24px;
+        margin: 24px auto;
+    }
+
+    .form-card {
+        padding: 20px;
+    }
+
+    .cards-grid {
+        gap: 16px;
+    }
+
+    .checkin-card {
+        padding: 14px;
+    }
+
+    .card-mood {
+        font-size: 1.6rem;
+    }
+
+    .card-name {
+        font-size: 0.9rem;
+    }
+
+    .card-status {
+        font-size: 0.75rem;
+    }
+
+    .card-task {
+        font-size: 0.7rem;
+    }
+
+    .reactions-row {
+        gap: 6px;
+    }
+
+    .reaction-btn {
+        padding: 2px 8px;
+        font-size: 0.7rem;
+    }
+
+    .comment-input {
+        font-size: 0.65rem;
+        padding: 5px 10px;
+    }
+
+    .card-footer {
+        font-size: 0.6rem;
+    }
+
+    .card-time {
+        font-size: 0.6rem;
+    }
+
+    .card-delete {
+        font-size: 0.8rem;
+    }
+
+    .submit-btn {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .clear-btn {
+        padding: 6px 12px;
+        font-size: 0.7rem;
+    }
+
+    .form-title {
+        font-size: 1.1rem;
+    }
+
+    .form-sub {
+        font-size: 0.7rem;
+    }
+
+    .daily-prompt {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+    }
+
+    .field-label {
+        font-size: 0.7rem;
+    }
+
+    .field-input {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .mood-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .cards-title {
+        font-size: 1.1rem;
+    }
+
+    .cards-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .empty-state {
+        padding: 40px 16px;
+        font-size: 0.8rem;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 2rem;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 6px;
+        font-size: 0.65rem;
+    }
+
+    .header-inner {
+        gap: 8px;
+    }
+
+    .header-left {
+        gap: 6px;
+    }
+
+    .header-logo {
+        font-size: 0.9rem;
+    }
+
+    .header-tagline {
+        display: none;
+        /* hide tagline on very small screens */
+    }
+
+    .checkin-count-badge {
+        padding: 2px 8px;
+        font-size: 0.6rem;
+    }
+
+    .theme-toggle {
+        padding: 3px 8px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Extra small devices (up to 380px) */
+@media (max-width: 380px) {
+    .header-date {
+        display: none;
+    }
+
+    .dynamic-greeting {
+        display: none;
+    }
+
+    .header-right {
+        gap: 6px;
+    }
+
+    .checkin-count-badge {
+        font-size: 0.55rem;
+    }
+
+    .mood-picker {
+        gap: 5px;
+    }
+
+    .mood-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .form-card {
+        padding: 16px;
+    }
+
+    .cards-grid {
+        gap: 12px;
+    }
+
+    .checkin-card {
+        padding: 12px;
+    }
+
+    .card-mood {
+        font-size: 1.3rem;
+    }
+
+    .card-name {
+        font-size: 0.85rem;
+    }
+}
